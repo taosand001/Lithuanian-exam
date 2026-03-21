@@ -183,6 +183,19 @@ export default function ExamSession() {
     </div>
   )
 
+  if (!loading && !error && questions.length === 0) {
+    return (
+      <div className="min-h-screen flex items-center justify-center p-4">
+        <div className="bg-amber-50 border border-amber-200 text-amber-800 rounded-2xl p-8 max-w-md text-center">
+          <p className="text-3xl mb-3">📭</p>
+          <p className="font-semibold text-lg mb-2">Klausimai nerasti</p>
+          <p className="text-sm mb-4">Šiam egzaminui dar nėra klausimų. Susisiekite su administratoriumi.</p>
+          <button onClick={() => window.history.back()} className="btn-primary text-sm px-4 py-2 rounded-xl">← Grįžti</button>
+        </div>
+      </div>
+    )
+  }
+
   if (!currentQuestion) return null
 
   const unanswered = questions.filter(q =>
