@@ -281,7 +281,9 @@ export default function ExamSession() {
             questions={questions}
             currentIndex={currentIndex}
             answers={answers as Record<string, string>}
+            textAnswers={textAnswers}
             flagged={flagged}
+            revealedAnswers={revealedAnswers}
             onNavigate={(i) => { setCurrentIndex(i); setShowNav(false) }}
           />
         </aside>

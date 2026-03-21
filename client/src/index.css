@@ -57,5 +57,7 @@ audio {
 }
 .nav-btn.unanswered { @apply bg-slate-100 text-slate-500 hover:bg-slate-200; }
 .nav-btn.answered { @apply bg-green-100 text-green-700 hover:bg-green-200; }
+.nav-btn.correct { @apply bg-green-500 text-white hover:bg-green-600; }
+.nav-btn.wrong { @apply bg-red-400 text-white hover:bg-red-500; }
 .nav-btn.flagged { @apply bg-amber-100 text-amber-700 hover:bg-amber-200; }
 .nav-btn.current { @apply bg-violet-600 text-white shadow-md shadow-violet-200; }
