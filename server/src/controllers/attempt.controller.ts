@@ -1,9 +1,70 @@
 
 import { Response } from 'express';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient, Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.middleware';
 
 const prisma = new PrismaClient();
+
+type QuestionWithOptions = Prisma.QuestionGetPayload<{ include: { options: true } }>;
+
+async function getLastUsedVariants(userId: string, examId: string): Promise<Set<string>> {
+  const lastAttempt = await prisma.examAttempt.findFirst({
+    where: { userId, examId, completedAt: { not: null } },
+    orderBy: { startedAt: 'desc' },
+  });
+  if (!lastAttempt || !lastAttempt.questionIds) return new Set();
+  try {
+    const ids: string[] = JSON.parse(lastAttempt.questionIds);
+    if (!ids.length) return new Set();
+    const questions = await prisma.question.findMany({
+      where: { id: { in: ids } },
+      select: { variantSet: true },
+    });
+    return new Set(questions.map(q => q.variantSet).filter(Boolean) as string[]);
+  } catch {
+    return new Set();
+  }
+}
+
+function pickFreshVariant(variants: string[], usedVariants: Set<string>): string {
+  const fresh = variants.filter(v => !usedVariants.has(v));
+  const pool = fresh.length > 0 ? fresh : variants;
+  return pool[Math.floor(Math.random() * pool.length)];
+}
+
+async function selectQuestionsForAttempt(examId: string, userId: string): Promise<QuestionWithOptions[]> {
+  const allQuestions = await prisma.question.findMany({
+    where: { examId },
+    include: { options: { orderBy: { order: 'asc' } } },
+  });
+
+  const usedVariants = await getLastUsedVariants(userId, examId);
+
+  // Group by taskType → variantSet → questions
+  const byTask: Record<string, Record<string, QuestionWithOptions[]>> = {};
+  for (const q of allQuestions) {
+    const task = q.taskType || 'default';
+    const variant = q.variantSet || 'default';
+    if (!byTask[task]) byTask[task] = {};
+    if (!byTask[task][variant]) byTask[task][variant] = [];
+    byTask[task][variant].push(q);
+  }
+
+  const selected: QuestionWithOptions[] = [];
+  for (const variants of Object.values(byTask)) {
+    const variantKeys = Object.keys(variants);
+    const chosen = pickFreshVariant(variantKeys, usedVariants);
+    selected.push(...variants[chosen]);
+  }
+
+  const skillOrder = ['READING', 'LISTENING', 'GRAMMAR', 'WRITING', 'SPEAKING'];
+  return selected.sort((a, b) => {
+    const sa = skillOrder.indexOf(a.skill);
+    const sb = skillOrder.indexOf(b.skill);
+    if (sa !== sb) return sa - sb;
+    return (a.order ?? 0) - (b.order ?? 0);
+  });
+}
 
 export async function startAttempt(req: AuthRequest, res: Response): Promise<void> {
   try {
@@ -14,12 +75,15 @@ export async function startAttempt(req: AuthRequest, res: Response): Promise<voi
       res.status(404).json({ error: 'Exam not found' });
       return;
     }
+    const questions = await selectQuestionsForAttempt(examId, userId);
+    const questionIds = JSON.stringify(questions.map(q => q.id));
     const attempt = await prisma.examAttempt.create({
-      data: { userId, examId },
+      data: { userId, examId, questionIds },
       include: { exam: true },
     });
-    res.status(201).json({ attempt });
-  } catch {
+    res.status(201).json({ attempt: { ...attempt, questions } });
+  } catch (err) {
+    console.error('startAttempt error:', err);
     res.status(500).json({ error: 'Internal server error' });
   }
 }
