@@ -28,6 +28,7 @@ export default function ExamSession() {
   const [answers, setAnswers] = useState<Record<string, string | null>>({})
   const [textAnswers, setTextAnswers] = useState<Record<string, string>>({})
   const [flagged, setFlagged] = useState<Set<string>>(new Set())
+  const [revealedAnswers, setRevealedAnswers] = useState<Set<string>>(new Set())
   const [showSubmitModal, setShowSubmitModal] = useState(false)
   const [showExitModal, setShowExitModal] = useState(false)
   const [showNav, setShowNav] = useState(false)
@@ -131,8 +132,17 @@ export default function ExamSession() {
   }
   const sectionLabel = currentQuestion ? sectionLabels[currentQuestion.skill] : null
 
+  const revealQuestion = (questionId: string) => {
+    setRevealedAnswers(prev => new Set([...prev, questionId]))
+  }
+
   const handleSelectOption = (questionId: string, optionId: string) => {
     setAnswers(prev => ({ ...prev, [questionId]: optionId }))
+    // auto-reveal feedback for choice-based questions immediately on selection
+    const q = questions.find(q => q.id === questionId)
+    if (q && (q.type === 'MULTIPLE_CHOICE' || q.type === 'TRUE_FALSE' || q.type === 'MULTI_SELECT')) {
+      revealQuestion(questionId)
+    }
   }
 
   const handleTextChange = (questionId: string, text: string) => {
@@ -287,6 +297,8 @@ export default function ExamSession() {
                 textAnswers={textAnswers}
                 onSelectOption={handleSelectOption}
                 onTextChange={handleTextChange}
+                revealedAnswers={revealedAnswers}
+                onReveal={revealQuestion}
               />
             ) : (
               <QuestionPanel
@@ -296,9 +308,11 @@ export default function ExamSession() {
                 selectedOption={answers[currentQuestion.id] || null}
                 textAnswer={textAnswers[currentQuestion.id] || ''}
                 isFlagged={flagged.has(currentQuestion.id)}
+                isRevealed={revealedAnswers.has(currentQuestion.id)}
                 onSelectOption={handleSelectOptionSingle}
                 onTextChange={handleTextChangeSingle}
                 onToggleFlag={handleToggleFlag}
+                onReveal={() => revealQuestion(currentQuestion.id)}
               />
             )}
           </div>

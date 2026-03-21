@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react'
-import { Flag, Loader2, Mic, MicOff } from 'lucide-react'
+import { Flag, Loader2, Mic, MicOff, CheckCircle2, XCircle } from 'lucide-react'
 import { Question, Option } from '../../types'
 import Badge, { skillVariant } from '../ui/Badge'
 import { useLang } from '../../context/LanguageContext'
@@ -11,9 +11,11 @@ interface QuestionPanelProps {
   selectedOption: string | null
   textAnswer: string
   isFlagged: boolean
+  isRevealed: boolean
   onSelectOption: (optionId: string) => void
   onTextChange: (text: string) => void
   onToggleFlag: () => void
+  onReveal: () => void
 }
 
 const skillLabels: Record<string, string> = {
@@ -39,7 +41,7 @@ function RenderWithBlank({ content }: { content: string }) {
 
 export default function QuestionPanel({
   question, questionNumber, totalQuestions, selectedOption, textAnswer,
-  isFlagged, onSelectOption, onTextChange, onToggleFlag,
+  isFlagged, isRevealed, onSelectOption, onTextChange, onToggleFlag, onReveal,
 }: QuestionPanelProps) {
   const { lang, translateText } = useLang()
 
@@ -588,25 +590,41 @@ export default function QuestionPanel({
         <div className={`${displayOptions.length > 5 ? 'grid grid-cols-1 sm:grid-cols-2 gap-2' : 'space-y-2'}`}>
           {displayOptions.map((opt, idx) => {
             const isSelected = selectedOption === opt.id
+            const isCorrect = opt.isCorrect === true
+            const isWrongSelection = isRevealed && isSelected && !isCorrect
+            const isRightAnswer = isRevealed && isCorrect
             const label = question.taskType === 'P5_NOTICES'
-              ? opt.content  // A, B, C already in content
+              ? opt.content
               : String.fromCharCode(65 + idx)
             return (
               <button
                 key={opt.id}
-                onClick={() => onSelectOption(opt.id)}
-                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-150 text-sm font-medium ${
-                  isSelected
+                onClick={() => !isRevealed && onSelectOption(opt.id)}
+                disabled={isRevealed}
+                className={`w-full text-left px-4 py-3 rounded-xl border-2 transition-all duration-150 text-sm font-medium flex items-center justify-between ${
+                  isRightAnswer
+                    ? 'border-green-500 bg-green-50 text-green-800'
+                    : isWrongSelection
+                    ? 'border-red-400 bg-red-50 text-red-800'
+                    : isSelected
                     ? 'border-violet-500 bg-violet-50 text-violet-800'
+                    : isRevealed
+                    ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-default'
                     : 'border-slate-200 bg-white hover:border-violet-300 hover:bg-violet-50/40 text-slate-700'
                 }`}
               >
-                <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 text-xs font-bold flex-shrink-0 ${
-                  isSelected ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'
-                }`}>
-                  {label}
+                <span className="flex items-center gap-2">
+                  <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold flex-shrink-0 ${
+                    isRightAnswer ? 'bg-green-600 text-white' :
+                    isWrongSelection ? 'bg-red-500 text-white' :
+                    isSelected ? 'bg-violet-600 text-white' : 'bg-slate-100 text-slate-500'
+                  }`}>
+                    {label}
+                  </span>
+                  {opt.content}
                 </span>
-                {opt.content}
+                {isRightAnswer && <CheckCircle2 size={18} className="text-green-600 flex-shrink-0" />}
+                {isWrongSelection && <XCircle size={18} className="text-red-500 flex-shrink-0" />}
               </button>
             )
           })}
@@ -616,13 +634,36 @@ export default function QuestionPanel({
       {/* Fill blank input */}
       {question.type === 'FILL_BLANK' && (
         <div>
-          <input
-            type="text"
-            value={textAnswer}
-            onChange={(e) => onTextChange(e.target.value)}
-            placeholder="Įveskite trūkstamą žodį..."
-            className="input-field"
-          />
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={textAnswer}
+              onChange={(e) => !isRevealed && onTextChange(e.target.value)}
+              readOnly={isRevealed}
+              placeholder="Įveskite trūkstamą žodį..."
+              className={`input-field flex-1 ${isRevealed ? 'cursor-default' : ''}`}
+            />
+            {!isRevealed && textAnswer.trim() && (
+              <button
+                onClick={onReveal}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-xl transition-colors flex-shrink-0"
+              >
+                Tikrinti
+              </button>
+            )}
+          </div>
+          {isRevealed && (() => {
+            const correctAnswer = question.options.find(o => o.isCorrect)?.content ?? ''
+            const userCorrect = correctAnswer.toLowerCase().trim() === textAnswer.toLowerCase().trim()
+            return (
+              <div className={`mt-2 flex items-center gap-2 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                {userCorrect
+                  ? <><CheckCircle2 size={16} /> Teisingai!</>
+                  : <><XCircle size={16} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
+                }
+              </div>
+            )
+          })()}
         </div>
       )}
 

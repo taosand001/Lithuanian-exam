@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from 'react'
+import { CheckCircle2, XCircle } from 'lucide-react'
 import { Question } from '../../types'
 
 interface Props {
@@ -8,6 +9,8 @@ interface Props {
   textAnswers: Record<string, string>
   onSelectOption: (questionId: string, optionId: string) => void
   onTextChange: (questionId: string, text: string) => void
+  revealedAnswers: Set<string>
+  onReveal: (questionId: string) => void
 }
 
 export default function ListeningSectionPanel({
@@ -17,6 +20,8 @@ export default function ListeningSectionPanel({
   textAnswers,
   onSelectOption,
   onTextChange,
+  revealedAnswers,
+  onReveal,
 }: Props) {
   const [isPlaying, setIsPlaying] = useState(false)
   const [showTranscript, setShowTranscript] = useState(false)
@@ -182,6 +187,7 @@ export default function ListeningSectionPanel({
       <div className="space-y-5">
         {sectionQuestions.map((q, idx) => {
           const selected = answers[q.id] ?? null
+          const isRevealed = revealedAnswers.has(q.id)
           return (
             <div key={q.id} className="bg-white rounded-xl border border-sky-100 p-4">
               {/* Question text */}
@@ -198,22 +204,38 @@ export default function ListeningSectionPanel({
                   {q.options.map((opt, oi) => {
                     const label = OPTION_LABELS[oi]
                     const isSelected = selected === opt.id
+                    const isCorrect = opt.isCorrect === true
+                    const isRightAnswer = isRevealed && isCorrect
+                    const isWrongSelection = isRevealed && isSelected && !isCorrect
                     return (
                       <button
                         key={opt.id}
-                        onClick={() => onSelectOption(q.id, opt.id)}
-                        className={`flex items-center text-left px-3 py-2.5 rounded-xl border-2 text-sm transition-all ${
-                          isSelected
+                        onClick={() => !isRevealed && onSelectOption(q.id, opt.id)}
+                        disabled={isRevealed}
+                        className={`flex items-center justify-between text-left px-3 py-2.5 rounded-xl border-2 text-sm transition-all ${
+                          isRightAnswer
+                            ? 'border-green-500 bg-green-50 text-green-800 font-medium'
+                            : isWrongSelection
+                            ? 'border-red-400 bg-red-50 text-red-800 font-medium'
+                            : isSelected
                             ? 'border-sky-500 bg-sky-50 text-sky-900 font-medium'
+                            : isRevealed
+                            ? 'border-slate-200 bg-slate-50 text-slate-400 cursor-default'
                             : 'border-slate-200 bg-white text-slate-700 hover:border-sky-300 hover:bg-sky-50/40'
                         }`}
                       >
-                        <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full mr-2 text-xs font-bold flex-shrink-0 ${
-                          isSelected ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-500'
-                        }`}>
-                          {label}
+                        <span className="flex items-center gap-2">
+                          <span className={`inline-flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold flex-shrink-0 ${
+                            isRightAnswer ? 'bg-green-600 text-white' :
+                            isWrongSelection ? 'bg-red-500 text-white' :
+                            isSelected ? 'bg-sky-500 text-white' : 'bg-slate-100 text-slate-500'
+                          }`}>
+                            {label}
+                          </span>
+                          {opt.content}
                         </span>
-                        {opt.content}
+                        {isRightAnswer && <CheckCircle2 size={16} className="text-green-600 flex-shrink-0" />}
+                        {isWrongSelection && <XCircle size={16} className="text-red-500 flex-shrink-0" />}
                       </button>
                     )
                   })}
@@ -222,13 +244,38 @@ export default function ListeningSectionPanel({
 
               {/* L4: fill-blank input */}
               {q.type === 'FILL_BLANK' && (
-                <input
-                  type="text"
-                  value={textAnswers[q.id] ?? ''}
-                  onChange={(e) => onTextChange(q.id, e.target.value)}
-                  placeholder={`Žodis [${q.content.match(/\[(\d+)\]/)?.[1] ?? ''}]...`}
-                  className="w-full px-3 py-2 border-2 border-slate-200 rounded-lg text-sm focus:border-sky-400 focus:outline-none focus:ring-0 bg-white"
-                />
+                <div>
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={textAnswers[q.id] ?? ''}
+                      onChange={(e) => !isRevealed && onTextChange(q.id, e.target.value)}
+                      readOnly={isRevealed}
+                      placeholder={`Žodis [${q.content.match(/\[(\d+)\]/)?.[1] ?? ''}]...`}
+                      className="flex-1 px-3 py-2 border-2 border-slate-200 rounded-lg text-sm focus:border-sky-400 focus:outline-none focus:ring-0 bg-white"
+                    />
+                    {!isRevealed && (textAnswers[q.id] ?? '').trim() && (
+                      <button
+                        onClick={() => onReveal(q.id)}
+                        className="px-3 py-2 bg-sky-600 hover:bg-sky-700 text-white text-xs font-semibold rounded-lg transition-colors flex-shrink-0"
+                      >
+                        Tikrinti
+                      </button>
+                    )}
+                  </div>
+                  {isRevealed && (() => {
+                    const correctAnswer = q.options.find(o => o.isCorrect)?.content ?? ''
+                    const userCorrect = correctAnswer.toLowerCase().trim() === (textAnswers[q.id] ?? '').toLowerCase().trim()
+                    return (
+                      <div className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                        {userCorrect
+                          ? <><CheckCircle2 size={15} /> Teisingai!</>
+                          : <><XCircle size={15} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
+                        }
+                      </div>
+                    )
+                  })()}
+                </div>
               )}
             </div>
           )
