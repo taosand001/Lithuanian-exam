@@ -1,0 +1,89 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String        @id @default(cuid())
+  name      String
+  email     String        @unique
+  password  String
+  role      String        @default("STUDENT")
+  createdAt DateTime      @default(now())
+  updatedAt DateTime      @updatedAt
+  attempts  ExamAttempt[]
+}
+
+model Exam {
+  id           String        @id @default(cuid())
+  title        String
+  titleEn      String?
+  description  String?
+  level        String
+  category     String
+  timeLimit    Int
+  passingScore Int
+  isPublished  Boolean       @default(false)
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+  questions    Question[]
+  attempts     ExamAttempt[]
+}
+
+model Question {
+  id          String          @id @default(cuid())
+  examId      String
+  exam        Exam            @relation(fields: [examId], references: [id], onDelete: Cascade)
+  type        String
+  skill       String
+  content     String
+  passage     String?
+  audioUrl    String?
+  imageUrl    String?
+  points      Int             @default(1)
+  order       Int             @default(0)
+  explanation String?
+  taskType    String?         // P1_MATCH | P2_DEF_MATCH | P3_DIALOGUE | P4_TRUE_FALSE | P5_NOTICES
+  variantSet  String?         // reading_A/B/C | listening_A/B | writing_pool | grammar_pool
+  options     Option[]
+  answers     AttemptAnswer[]
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  content    String
+  isCorrect  Boolean
+  order      Int      @default(0)
+}
+
+model ExamAttempt {
+  id          String          @id @default(cuid())
+  userId      String
+  user        User            @relation(fields: [userId], references: [id])
+  examId      String
+  exam        Exam            @relation(fields: [examId], references: [id])
+  score       Float?
+  passed      Boolean?
+  startedAt   DateTime        @default(now())
+  completedAt DateTime?
+  timeSpent   Int?
+  questionIds String          @default("[]")
+  answers     AttemptAnswer[]
+}
+
+model AttemptAnswer {
+  id             String      @id @default(cuid())
+  attemptId      String
+  attempt        ExamAttempt @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId     String
+  question       Question    @relation(fields: [questionId], references: [id])
+  selectedOption String?
+  textAnswer     String?
+  isCorrect      Boolean?
+}
