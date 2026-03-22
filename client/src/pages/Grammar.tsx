@@ -886,7 +886,7 @@ export default function Grammar() {
                   { prep:'priešais', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'opposite / across from', example:'Priešais mokyklos yra parkas.' },
                   { prep:'šalia', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'beside / alongside', example:'Šalia manęs sėdi draugas.' },
                   { prep:'tarp', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'between / among', example:'Tarp stalo ir kėdės.' },
-                  { prep:'ties', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'right at / at the level of', example:'Sustokite ties raudonuoju namu.' },
+                  { prep:'ties', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'right at / at the level of', example:'Sustokite ties raudonuoju namu.' },
                   { prep:'už (vieta)', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'behind / beyond (location)', example:'Namas yra už miško.' },
                   { prep:'virš', caseId:'kilmininkas', caseLabel:'Kilmininkas', caseColor:'text-purple-700', caseBg:'bg-purple-50', meaning:'above / over', example:'Lėktuvas virš miesto.' },
                   // Accusative
@@ -897,14 +897,12 @@ export default function Grammar() {
                   { prep:'per (laikas)', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'for (time duration)', example:'Išmokau per metus.' },
                   { prep:'po (judėjimas)', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'under (motion downward)', example:'Pakišk ranką po stalą.' },
                   { prep:'prieš (laikas)', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'before / ago (time)', example:'Atvykau prieš savaitę.' },
+                  { prep:'prieš (vieta)', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'in front of (position)', example:'Stoviu prieš namą.' },
                   { prep:'pro', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'past / through / by (passing)', example:'Važiuojame pro Kauną.' },
                   { prep:'už (mainai)', caseId:'galininkas', caseLabel:'Galininkas', caseColor:'text-orange-700', caseBg:'bg-orange-50', meaning:'for (exchange / price)', example:'Mokėjau 10 € už bilietą.' },
                   // Instrumental
                   { prep:'po (statika)', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'under / below (static)', example:'Katė miega po stalu.' },
-                  { prep:'prieš (statika)', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'in front of (static position)', example:'Stoviu prieš namu.' },
                   { prep:'su', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'with / together with', example:'Einu su draugu.' },
-                  { prep:'už (statika)', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'behind (static position)', example:'Jis sėdi už manęs.' },
-                  { prep:'virš (statika)', caseId:'inagininkas', caseLabel:'Įnagininkas', caseColor:'text-teal-700', caseBg:'bg-teal-50', meaning:'above / over (static)', example:'Paveikslas kabo virš lango.' },
                 ].map((row, i) => (
                   <tr key={i} onClick={() => { setActiveCase(row.caseId); setActiveTab('prepositions'); window.scrollTo({ top: 0, behavior: 'smooth' }) }}
                     className="border-b border-slate-100 cursor-pointer hover:bg-slate-50 transition-colors">
@@ -919,7 +917,7 @@ export default function Grammar() {
               </tbody>
             </table>
           </div>
-          <p className="text-xs text-slate-400 mt-3">💡 Note: <strong>po</strong>, <strong>prieš</strong>, <strong>už</strong>, and <strong>virš</strong> can take different cases depending on whether they express static location (Įnagininkas) or motion/time (Kilmininkas/Galininkas).</p>
+          <p className="text-xs text-slate-400 mt-3">💡 Note: <strong>po</strong> and <strong>prieš</strong> can take different cases — <strong>po</strong> takes Galininkas (motion) or Įnagininkas (static). <strong>prieš</strong> takes Galininkas always. <strong>už</strong> takes Kilmininkas (behind) or Galininkas (for/exchange). <strong>virš</strong> always takes Kilmininkas.</p>
         </div>
       </div>
     </Layout>
