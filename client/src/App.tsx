@@ -12,6 +12,7 @@ import ExamSession from './pages/ExamSession'
 import Results from './pages/Results'
 import Profile from './pages/Profile'
 import Grammar from './pages/Grammar'
+import VerbPatterns from './pages/VerbPatterns'
 import AdminDashboard from './pages/admin/AdminDashboard'
 import ManageExams from './pages/admin/ManageExams'
 import ManageQuestions from './pages/admin/ManageQuestions'
@@ -28,6 +29,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/exams" element={<ExamList />} />
           <Route path="/grammar" element={<Grammar />} />
+          <Route path="/verbs" element={<VerbPatterns />} />
 
           <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
           <Route path="/exam/:id" element={<ProtectedRoute><ExamSession /></ProtectedRoute>} />

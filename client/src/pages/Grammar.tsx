@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { Link } from 'react-router-dom'
 import Layout from '../components/layout/Layout'
 
 interface CaseEndings {
@@ -354,11 +355,63 @@ const QUICK_REF = [
   { question: 'Kreipinys (Direct address)', case: 'Šauksmininkas', example: 'Labas, drauge!' },
 ]
 
+// ── Pronoun declension table ────────────────────────────────────────────────
+
+const PRONOUN_ROWS = [
+  { pron: 'aš',       en: 'I / me'          },
+  { pron: 'tu',       en: 'you (sg)'         },
+  { pron: 'jis',      en: 'he / him'         },
+  { pron: 'ji',       en: 'she / her'        },
+  { pron: 'mes',      en: 'we / us'          },
+  { pron: 'jūs',      en: 'you (pl/formal)'  },
+  { pron: 'jie',      en: 'they (m)'         },
+  { pron: 'jos',      en: 'they (f)'         },
+]
+
+const PRONOUN_FORMS: Record<string, { forms: string[]; reflexive: string; note: string }> = {
+  vardininkas: {
+    forms: ['aš', 'tu', 'jis', 'ji', 'mes', 'jūs', 'jie', 'jos'],
+    reflexive: '—',
+    note: 'Nominative is the subject form — who is doing the action.',
+  },
+  kilmininkas: {
+    forms: ['manęs', 'tavęs', 'jo', 'jos', 'mūsų', 'jūsų', 'jų', 'jų'],
+    reflexive: 'savęs',
+    note: '"Jo/jos" are short forms. Full forms "manęs/tavęs" are used after prepositions: "be manęs" (without me), "apie tavęs" → "apie tave" (acc preferred). After negation: "Manęs nėra namuose" (I am not at home).',
+  },
+  naudininkas: {
+    forms: ['man', 'tau', 'jam', 'jai', 'mums', 'jums', 'jiems', 'joms'],
+    reflexive: 'sau',
+    note: '"Man patinka" = I like (lit. "to me it pleases"). Dative is key with: patikti, reikėti, atrodyti, tikti, pavykti, sekti(s).',
+  },
+  galininkas: {
+    forms: ['mane', 'tave', 'jį', 'ją', 'mus', 'jus', 'juos', 'jas'],
+    reflexive: 'save',
+    note: 'Accusative pronouns are the direct object. "Jį/ją" have a distinct form with the nasal tail (ą/į). "Aš myliu tave" (I love you).',
+  },
+  inagininkas: {
+    forms: ['manimi', 'tavimi', 'juo', 'ja', 'mumis', 'jumis', 'jais', 'jomis'],
+    reflexive: 'savimi',
+    note: 'Used with reflexive -tis verbs: domėtis, rūpintis, džiaugtis, didžiuotis, žavėtis. E.g. "Domisi juo" (She is interested in him).',
+  },
+  vietininkas: {
+    forms: ['manyje', 'tavyje', 'jame', 'joje', 'mumyse', 'jumyse', 'juose', 'jose'],
+    reflexive: 'savyje',
+    note: 'Locative pronouns are often figurative: "manyje" = within me/inside me. "Jis suranda stiprybę savyje" (He finds strength within himself).',
+  },
+  sauksmininkas: {
+    forms: ['—', '—', '—', '—', '—', '—', '—', '—'],
+    reflexive: '—',
+    note: 'Personal pronouns have no Vocative form. Vocative is only used for nouns and names: "Labas, Tomai!" not "Labas, jis!".',
+  },
+}
+
 export default function Grammar() {
   const [activeCase, setActiveCase] = useState('vardininkas')
-  const [activeTab, setActiveTab] = useState<'usage' | 'endings' | 'prepositions'>('usage')
+  const [activeTab, setActiveTab] = useState<'usage' | 'endings' | 'prepositions' | 'pronouns'>('usage')
 
   const current = CASES.find(c => c.id === activeCase)!
+  const pronounData = PRONOUN_FORMS[current.id]
 
   return (
     <Layout>
@@ -407,8 +460,8 @@ export default function Grammar() {
           </div>
 
           {/* Tab buttons */}
-          <div className="flex gap-2 mb-4">
-            {(['usage', 'endings', 'prepositions'] as const).map(tab => (
+          <div className="flex flex-wrap gap-2 mb-4">
+            {(['usage', 'endings', 'prepositions', 'pronouns'] as const).map(tab => (
               <button
                 key={tab}
                 onClick={() => setActiveTab(tab)}
@@ -418,7 +471,7 @@ export default function Grammar() {
                     : 'text-slate-500 hover:text-slate-700'
                 }`}
               >
-                {tab === 'usage' ? '📖 Vartojimas' : tab === 'endings' ? '🔤 Galūnės' : '🔗 Prielinksniai'}
+                {tab === 'usage' ? '📖 Vartojimas' : tab === 'endings' ? '🔤 Galūnės' : tab === 'prepositions' ? '🔗 Prielinksniai' : '👤 Įvardžiai'}
               </button>
             ))}
           </div>
@@ -609,9 +662,66 @@ export default function Grammar() {
               )}
             </div>
           )}
+
+          {/* Tab: Pronouns */}
+          {activeTab === 'pronouns' && (
+            <div>
+              <div className="bg-white/70 border border-slate-200 rounded-xl px-4 py-3 mb-4 text-sm text-slate-700">
+                💡 {pronounData.note}
+              </div>
+
+              {/* Pronoun table */}
+              <div className="overflow-x-auto rounded-xl border border-slate-200 mb-4">
+                <table className="w-full text-sm border-collapse">
+                  <thead>
+                    <tr className="bg-slate-50">
+                      <th className="px-3 py-2.5 text-left font-semibold text-slate-500 border border-slate-200 text-xs">Pronoun (Nom.)</th>
+                      <th className="px-3 py-2.5 text-left font-semibold text-slate-500 border border-slate-200 text-xs">English</th>
+                      <th className={`px-3 py-2.5 text-left font-bold ${current.color} border border-slate-200 text-xs`}>{current.ltName} form</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {PRONOUN_ROWS.map((row, i) => (
+                      <tr key={row.pron} className={i % 2 === 0 ? 'bg-white' : 'bg-slate-50/50'}>
+                        <td className="px-3 py-2 border border-slate-200 font-bold text-slate-700">{row.pron}</td>
+                        <td className="px-3 py-2 border border-slate-200 text-slate-500 text-xs italic">{row.en}</td>
+                        <td className={`px-3 py-2 border border-slate-200 font-bold font-mono ${
+                          pronounData.forms[i] === '—' ? 'text-slate-400' : current.color
+                        }`}>{pronounData.forms[i]}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              {/* Reflexive pronoun */}
+              <div className={`rounded-xl border ${current.borderColor} ${current.bgColor} p-4`}>
+                <div className="flex items-start gap-3 flex-wrap">
+                  <span className="text-xs font-bold text-slate-500 uppercase tracking-wider mt-1">Reflexive pronoun</span>
+                  <span className={`px-3 py-1 rounded-full font-mono font-bold text-sm ${current.bgColor} ${current.color} border ${current.borderColor}`}>
+                    {pronounData.reflexive}
+                  </span>
+                  {pronounData.reflexive !== '—' && (
+                    <p className="text-xs text-slate-600 italic w-full mt-1">
+                      Used when the subject and object refer to the same person — e.g. "Jis rūpinasi <strong>savimi</strong>" (He takes care of <em>himself</em>).
+                    </p>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Noun Declension Comparison Chart */}
+        {/* Verb Patterns link */}
+        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-5 mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="font-bold text-slate-800 text-base">🔤 Veiksmažodžių valdomi linksniai</p>
+            <p className="text-sm text-slate-500 mt-0.5">Which case does each verb require? — Accusative, Dative, Genitive, Instrumental & more</p>
+          </div>
+          <Link to="/verbs" className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold flex-shrink-0">
+            Open Verb Patterns →
+          </Link>
+        </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
           <h2 className="text-lg font-bold text-slate-700 mb-1">🔄 Linksnių palyginimas su Vardininku</h2>
           <p className="text-sm text-slate-500 mb-4">
