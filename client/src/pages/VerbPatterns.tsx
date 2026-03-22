@@ -11,6 +11,11 @@ interface VerbEntry {
   note?: string
 }
 
+interface SampleQuestion {
+  lt: string
+  en: string
+}
+
 interface VerbCategory {
   caseId: string
   caseLt: string
@@ -25,6 +30,19 @@ interface VerbCategory {
 }
 
 const VERB_CATEGORIES: VerbCategory[] = [
+  {
+    caseId: 'vardininkas',
+    caseLt: 'Vardininkas',
+    caseEn: 'Nominative',
+    governs: 'kas?',
+    color: 'text-blue-700',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-300',
+    badgeColor: 'bg-blue-600',
+    description:
+      'Nominative is the **subject case** — it identifies WHO or WHAT performs the action. It is the dictionary form of every noun. Every sentence\'s subject is in nominative. Ask "kas?" (who?) or "kas tai?" (what is this?). It is also used for names, titles, and after the verb "yra" (is/are) when identifying.',
+    verbs: [],
+  },
   {
     caseId: 'galininkas',
     caseLt: 'Galininkas',
@@ -189,12 +207,100 @@ const VERB_CATEGORIES: VerbCategory[] = [
 ]
 
 const QUICK_TABLE = [
+  { question: 'kas?', caseEn: 'Nominative', caseLt: 'Vardininkas', example: 'subject of a sentence', color: 'text-blue-700', bg: 'bg-blue-100' },
   { question: 'ką?', caseEn: 'Accusative', caseLt: 'Galininkas', example: 'direct object', color: 'text-orange-700', bg: 'bg-orange-100' },
   { question: 'kam?', caseEn: 'Dative', caseLt: 'Naudininkas', example: 'indirect object / beneficiary', color: 'text-yellow-700', bg: 'bg-yellow-100' },
   { question: 'ko?', caseEn: 'Genitive', caseLt: 'Kilmininkas', example: 'desire / fear / negation', color: 'text-purple-700', bg: 'bg-purple-100' },
   { question: 'kuo?', caseEn: 'Instrumental', caseLt: 'Įnagininkas', example: 'means / profession / -tis verbs', color: 'text-indigo-700', bg: 'bg-indigo-100' },
   { question: 'kur?', caseEn: 'Locative', caseLt: 'Vietininkas', example: 'location / place', color: 'text-rose-700', bg: 'bg-rose-100' },
 ]
+
+const SAMPLE_QUESTIONS: Record<string, SampleQuestion[]> = {
+  vardininkas: [
+    { lt: 'Kas tai yra?', en: 'What is this/that?' },
+    { lt: 'Kas čia gyvena?', en: 'Who lives here?' },
+    { lt: 'Kas jis yra?', en: 'Who is he?' },
+    { lt: 'Kas yra jūsų vardas?', en: 'What is your name?' },
+    { lt: 'Kas nutiko?', en: 'What happened?' },
+    { lt: 'Kas ateina šiandien?', en: 'Who is coming today?' },
+    { lt: 'Kas yra Lietuvos sostinė?', en: 'What is the capital of Lithuania?' },
+    { lt: 'Kas kalba lietuviškai?', en: 'Who speaks Lithuanian?' },
+    { lt: 'Kas yra jūsų mėgstamiausias dalykas?', en: 'What is your favourite thing?' },
+    { lt: 'Kas ten yra?', en: 'Who/what is there?' },
+    { lt: 'Kas dirba šioje parduotuvėje?', en: 'Who works in this shop?' },
+    { lt: 'Kas tave moko?', en: 'Who teaches you?' },
+  ],
+  galininkas: [
+    { lt: 'Ką jūs matote?', en: 'What do you see?' },
+    { lt: 'Ką perkat?', en: 'What are you buying?' },
+    { lt: 'Ką valgote šiandien?', en: 'What are you eating today?' },
+    { lt: 'Ką skaitote?', en: 'What are you reading?' },
+    { lt: 'Ką darote laisvalaikiu?', en: 'What do you do in your free time?' },
+    { lt: 'Ką geriate rytą?', en: 'What do you drink in the morning?' },
+    { lt: 'Ką rašote?', en: 'What are you writing?' },
+    { lt: 'Ką žaidžiate?', en: 'What do you play?' },
+    { lt: 'Ką kviečiate į vakarėlį?', en: 'Who are you inviting to the party?' },
+    { lt: 'Ką mylite labiausiai?', en: 'What/whom do you love most?' },
+    { lt: 'Ką matėte vakar vakare?', en: 'What did you see last night?' },
+    { lt: 'Ką norite nupirkti?', en: 'What do you want to buy?' },
+  ],
+  naudininkas: [
+    { lt: 'Kam skambinate?', en: 'Who are you calling?' },
+    { lt: 'Kam padedote?', en: 'Who are you helping?' },
+    { lt: 'Kam rašote laišką?', en: 'Who are you writing a letter to?' },
+    { lt: 'Kam patinka ši muzika?', en: 'Who likes this music?' },
+    { lt: 'Kam reikia pagalbos?', en: 'Who needs help?' },
+    { lt: 'Kam atsakote?', en: 'Who are you answering?' },
+    { lt: 'Kam priklauso šis namas?', en: 'Who does this house belong to?' },
+    { lt: 'Kam dėkojate?', en: 'Who are you thanking?' },
+    { lt: 'Kam pavyko išlaikyti egzaminą?', en: 'Who managed to pass the exam?' },
+    { lt: 'Kam sekasi gerai?', en: 'Who is doing well?' },
+    { lt: 'Kam pasakysite šią naujieną?', en: 'Who will you tell this news to?' },
+    { lt: 'Kam trukdote?', en: 'Who are you disturbing?' },
+  ],
+  kilmininkas: [
+    { lt: 'Ko norite gerti?', en: 'What do you want to drink?' },
+    { lt: 'Ko bijote?', en: 'What are you afraid of?' },
+    { lt: 'Ko laukiate?', en: 'What/whom are you waiting for?' },
+    { lt: 'Ko ieškote?', en: 'What are you looking for?' },
+    { lt: 'Ko jums reikia?', en: 'What do you need?' },
+    { lt: 'Kieno tai yra?', en: 'Whose is this?' },
+    { lt: 'Ko jums trūksta?', en: 'What do you lack?' },
+    { lt: 'Ko vengiate?', en: 'What do you avoid?' },
+    { lt: 'Ko prašote?', en: 'What are you asking for?' },
+    { lt: 'Ko mokotės?', en: 'What are you learning?' },
+    { lt: 'Ko klausote dažniausiai?', en: 'What do you listen to most often?' },
+    { lt: 'Ko tikitės iš šio kurso?', en: 'What do you expect from this course?' },
+  ],
+  inagininkas: [
+    { lt: 'Kuo domitės?', en: 'What are you interested in?' },
+    { lt: 'Kuo dirbate?', en: 'What do you work as?' },
+    { lt: 'Kuo džiaugiatės šiandien?', en: 'What are you happy about today?' },
+    { lt: 'Kuo naudojatės kasdien?', en: 'What do you use every day?' },
+    { lt: 'Kuo rūpinatės?', en: 'Who/what do you take care of?' },
+    { lt: 'Kuo žavitės?', en: 'What do you admire?' },
+    { lt: 'Kuo didžiuojatės?', en: 'What are you proud of?' },
+    { lt: 'Kuo norite tapti?', en: 'What do you want to become?' },
+    { lt: 'Kuo sergate?', en: 'What are you sick with?' },
+    { lt: 'Kuo užsiimate laisvalaikiu?', en: 'What do you do in your free time (hobby)?' },
+    { lt: 'Kuo pasitikite labiausiai?', en: 'Who do you trust most?' },
+    { lt: 'Kuo gėritės gamtoje?', en: 'What do you admire in nature?' },
+  ],
+  vietininkas: [
+    { lt: 'Kur gyvenate?', en: 'Where do you live?' },
+    { lt: 'Kur dirbate?', en: 'Where do you work?' },
+    { lt: 'Kur mokotės?', en: 'Where do you study?' },
+    { lt: 'Kur esate dabar?', en: 'Where are you now?' },
+    { lt: 'Kur apsistojote?', en: 'Where are you staying?' },
+    { lt: 'Kur susitinkate su draugais?', en: 'Where do you meet your friends?' },
+    { lt: 'Kur praleidžiate vasarą?', en: 'Where do you spend the summer?' },
+    { lt: 'Kur yra artimiausias autobusų stotelė?', en: 'Where is the nearest bus stop?' },
+    { lt: 'Kur gimėte?', en: 'Where were you born?' },
+    { lt: 'Kur norėtumėte gyventi?', en: 'Where would you like to live?' },
+    { lt: 'Kur lankotės savaitgaliais?', en: 'Where do you go at weekends?' },
+    { lt: 'Kur stovėjo jūsų mašina?', en: 'Where was your car parked?' },
+  ],
+}
 
 function renderDescription(desc: string) {
   const parts = desc.split(/\*\*(.+?)\*\*/g)
@@ -225,7 +331,7 @@ export default function VerbPatterns() {
             v.exampleEn.toLowerCase().includes(query)
         )
       : cat.verbs,
-  })).filter((cat) => cat.verbs.length > 0)
+  })).filter((cat) => !query || cat.verbs.length > 0)
 
   return (
     <Layout>
@@ -372,6 +478,7 @@ export default function VerbPatterns() {
               </div>
 
               {/* Verb grid */}
+              {cat.verbs.length > 0 && (
               <div className="p-6 bg-white">
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {cat.verbs.map((verb) => (
@@ -414,13 +521,35 @@ export default function VerbPatterns() {
                   ))}
                 </div>
               </div>
+              )}
+
+              {/* Sample Questions */}
+              {!query && (SAMPLE_QUESTIONS[cat.caseId] || []).length > 0 && (
+                <div className={`px-6 pb-6 bg-white border-t border-slate-100`}>
+                  <h3 className={`text-sm font-bold ${cat.color} mt-5 mb-3 flex items-center gap-2`}>
+                    <span>💬</span>
+                    <span>Sample Questions — {cat.caseLt} ({cat.governs})</span>
+                  </h3>
+                  <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
+                    {(SAMPLE_QUESTIONS[cat.caseId] || []).map((q, i) => (
+                      <div
+                        key={i}
+                        className={`rounded-lg border ${cat.borderColor} bg-white px-3 py-2.5 flex flex-col gap-0.5`}
+                      >
+                        <span className={`text-sm font-semibold font-mono ${cat.color}`}>{q.lt}</span>
+                        <span className="text-xs text-slate-400">{q.en}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </section>
           ))}
         </div>
 
         {/* Footer note */}
         <p className="mt-10 text-center text-xs text-slate-400">
-          Verb governance reference for Lithuanian learners · Cases: Galininkas · Naudininkas · Kilmininkas · Įnagininkas · Vietininkas
+          Verb governance reference for Lithuanian learners · Cases: Vardininkas · Galininkas · Naudininkas · Kilmininkas · Įnagininkas · Vietininkas
         </p>
       </div>
     </Layout>
