@@ -708,13 +708,23 @@ export default function Grammar() {
         </div>
 
         {/* Verb Patterns link */}
-        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-5 mb-6 flex items-center justify-between flex-wrap gap-4">
+        <div className="bg-gradient-to-r from-violet-50 to-indigo-50 border border-violet-200 rounded-2xl p-5 mb-4 flex items-center justify-between flex-wrap gap-4">
           <div>
             <p className="font-bold text-slate-800 text-base">🔤 Veiksmažodžių valdomi linksniai</p>
             <p className="text-sm text-slate-500 mt-0.5">Which case does each verb require? — Accusative, Dative, Genitive, Instrumental & more</p>
           </div>
           <Link to="/verbs" className="btn-primary px-5 py-2.5 rounded-xl text-sm font-bold flex-shrink-0">
             Open Verb Patterns →
+          </Link>
+        </div>
+        {/* Verb Conjugation link */}
+        <div className="bg-gradient-to-r from-teal-50 to-cyan-50 border border-teal-200 rounded-2xl p-5 mb-6 flex items-center justify-between flex-wrap gap-4">
+          <div>
+            <p className="font-bold text-slate-800 text-base">🔄 Veiksmažodžių asmenavimas</p>
+            <p className="text-sm text-slate-500 mt-0.5">Verb conjugation tables — present &amp; past tense for all persons (aš dirbu / dirba / dirbau / dirbo…)</p>
+          </div>
+          <Link to="/conjugation" className="bg-teal-600 hover:bg-teal-700 text-white px-5 py-2.5 rounded-xl text-sm font-bold flex-shrink-0 transition-colors">
+            Open Conjugation →
           </Link>
         </div>
         <div className="bg-white rounded-2xl border border-slate-200 p-6 mb-6">
