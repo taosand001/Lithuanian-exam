@@ -57,8 +57,16 @@ async function selectQuestionsForAttempt(examId: string, userId: string): Promis
     selected.push(...variants[chosen]);
   }
 
+  // Cap grammar questions at 10, chosen randomly
+  const GRAMMAR_CAP = 10;
+  const grammar = selected.filter(q => q.skill === 'GRAMMAR');
+  const others  = selected.filter(q => q.skill !== 'GRAMMAR');
+  const cappedGrammar = grammar.length > GRAMMAR_CAP
+    ? grammar.sort(() => Math.random() - 0.5).slice(0, GRAMMAR_CAP)
+    : grammar;
+
   const skillOrder = ['READING', 'LISTENING', 'GRAMMAR', 'WRITING', 'SPEAKING'];
-  return selected.sort((a, b) => {
+  return [...cappedGrammar, ...others].sort((a, b) => {
     const sa = skillOrder.indexOf(a.skill);
     const sb = skillOrder.indexOf(b.skill);
     if (sa !== sb) return sa - sb;
