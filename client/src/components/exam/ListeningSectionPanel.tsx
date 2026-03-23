@@ -242,6 +242,21 @@ export default function ListeningSectionPanel({
                 </div>
               )}
 
+              {/* Explanation box for MCQ — shown only when wrong */}
+              {(q.type === 'MULTIPLE_CHOICE' || q.type === 'TRUE_FALSE') && isRevealed && q.explanation && (() => {
+                const userWasWrong = q.options.find(o => o.id === answers[q.id])?.isCorrect === false
+                if (!userWasWrong) return null
+                return (
+                  <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex gap-3">
+                    <span className="text-blue-500 text-base flex-shrink-0 mt-0.5">💡</span>
+                    <div>
+                      <p className="text-xs font-bold text-blue-700 mb-1 uppercase tracking-wide">Why is this the correct answer?</p>
+                      <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
+                    </div>
+                  </div>
+                )
+              })()}
+
               {/* L4: fill-blank input */}
               {q.type === 'FILL_BLANK' && (
                 <div>
@@ -267,12 +282,23 @@ export default function ListeningSectionPanel({
                     const correctAnswer = q.options.find(o => o.isCorrect)?.content ?? ''
                     const userCorrect = correctAnswer.toLowerCase().trim() === (textAnswers[q.id] ?? '').toLowerCase().trim()
                     return (
-                      <div className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
-                        {userCorrect
-                          ? <><CheckCircle2 size={15} /> Teisingai!</>
-                          : <><XCircle size={15} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
-                        }
-                      </div>
+                      <>
+                        <div className={`mt-2 flex items-center gap-1.5 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                          {userCorrect
+                            ? <><CheckCircle2 size={15} /> Teisingai!</>
+                            : <><XCircle size={15} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
+                          }
+                        </div>
+                        {!userCorrect && q.explanation && (
+                          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex gap-3">
+                            <span className="text-blue-500 text-base flex-shrink-0 mt-0.5">💡</span>
+                            <div>
+                              <p className="text-xs font-bold text-blue-700 mb-1 uppercase tracking-wide">Why is this the correct answer?</p>
+                              <p className="text-sm text-blue-800 leading-relaxed">{q.explanation}</p>
+                            </div>
+                          </div>
+                        )}
+                      </>
                     )
                   })()}
                 </div>

@@ -631,6 +631,21 @@ export default function QuestionPanel({
         </div>
       )}
 
+      {/* Explanation box — shown after MCQ/TRUE_FALSE is revealed and user was wrong */}
+      {(question.type === 'MULTIPLE_CHOICE' || question.type === 'TRUE_FALSE') && isRevealed && question.explanation && (() => {
+        const userWasWrong = question.options.find(o => o.id === selectedOption)?.isCorrect === false
+        if (!userWasWrong) return null
+        return (
+          <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex gap-3">
+            <span className="text-blue-500 text-lg flex-shrink-0 mt-0.5">💡</span>
+            <div>
+              <p className="text-xs font-bold text-blue-700 mb-1 uppercase tracking-wide">Why is this the correct answer?</p>
+              <p className="text-sm text-blue-800 leading-relaxed">{question.explanation}</p>
+            </div>
+          </div>
+        )
+      })()}
+
       {/* Fill blank input */}
       {question.type === 'FILL_BLANK' && (
         <div>
@@ -656,12 +671,23 @@ export default function QuestionPanel({
             const correctAnswer = question.options.find(o => o.isCorrect)?.content ?? ''
             const userCorrect = correctAnswer.toLowerCase().trim() === textAnswer.toLowerCase().trim()
             return (
-              <div className={`mt-2 flex items-center gap-2 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
-                {userCorrect
-                  ? <><CheckCircle2 size={16} /> Teisingai!</>
-                  : <><XCircle size={16} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
-                }
-              </div>
+              <>
+                <div className={`mt-2 flex items-center gap-2 text-sm font-medium ${userCorrect ? 'text-green-700' : 'text-red-600'}`}>
+                  {userCorrect
+                    ? <><CheckCircle2 size={16} /> Teisingai!</>
+                    : <><XCircle size={16} /> Neteisinga. Teisingas atsakymas: <span className="font-bold">„{correctAnswer}"</span></>
+                  }
+                </div>
+                {!userCorrect && question.explanation && (
+                  <div className="mt-3 rounded-xl border border-blue-200 bg-blue-50 px-4 py-3 flex gap-3">
+                    <span className="text-blue-500 text-lg flex-shrink-0 mt-0.5">💡</span>
+                    <div>
+                      <p className="text-xs font-bold text-blue-700 mb-1 uppercase tracking-wide">Why is this the correct answer?</p>
+                      <p className="text-sm text-blue-800 leading-relaxed">{question.explanation}</p>
+                    </div>
+                  </div>
+                )}
+              </>
             )
           })()}
         </div>
