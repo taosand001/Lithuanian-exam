@@ -1,10 +1,8 @@
 import { Request, Response } from 'express';
 import bcrypt from 'bcryptjs';
-import { PrismaClient } from '@prisma/client';
 import { signAccessToken, signRefreshToken, verifyRefreshToken } from '../utils/jwt';
 import { AuthRequest } from '../middleware/auth.middleware';
-
-const prisma = new PrismaClient();
+import { prisma, withRetry } from '../utils/prisma';
 
 const COOKIE_OPTIONS = {
   httpOnly: true,
@@ -20,15 +18,15 @@ export async function register(req: Request, res: Response): Promise<void> {
       res.status(400).json({ error: 'Name, email and password are required' });
       return;
     }
-    const existing = await prisma.user.findUnique({ where: { email } });
+    const existing = await withRetry(() => prisma.user.findUnique({ where: { email } }));
     if (existing) {
       res.status(409).json({ error: 'Email already registered' });
       return;
     }
     const hashed = await bcrypt.hash(password, 10);
-    const user = await prisma.user.create({
+    const user = await withRetry(() => prisma.user.create({
       data: { name, email, password: hashed },
-    });
+    }));
     const payload = { userId: user.id, email: user.email, role: user.role };
     const accessToken = signAccessToken(payload);
     const refreshToken = signRefreshToken(payload);
@@ -49,7 +47,7 @@ export async function login(req: Request, res: Response): Promise<void> {
       res.status(400).json({ error: 'Email and password are required' });
       return;
     }
-    const user = await prisma.user.findUnique({ where: { email } });
+    const user = await withRetry(() => prisma.user.findUnique({ where: { email } }));
     if (!user) {
       res.status(401).json({ error: 'Invalid credentials' });
       return;
@@ -85,7 +83,7 @@ export async function refresh(req: Request, res: Response): Promise<void> {
       return;
     }
     const payload = verifyRefreshToken(token);
-    const user = await prisma.user.findUnique({ where: { id: payload.userId } });
+    const user = await withRetry(() => prisma.user.findUnique({ where: { id: payload.userId } }));
     if (!user) {
       res.status(401).json({ error: 'User not found' });
       return;
@@ -102,10 +100,10 @@ export async function refresh(req: Request, res: Response): Promise<void> {
 
 export async function me(req: AuthRequest, res: Response): Promise<void> {
   try {
-    const user = await prisma.user.findUnique({
+    const user = await withRetry(() => prisma.user.findUnique({
       where: { id: req.user!.userId },
       select: { id: true, name: true, email: true, role: true, createdAt: true },
-    });
+    }));
     if (!user) {
       res.status(404).json({ error: 'User not found' });
       return;

@@ -1,15 +1,13 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma, withRetry } from '../utils/prisma';
 
 export async function listExams(_req: Request, res: Response): Promise<void> {
   try {
-    const exams = await prisma.exam.findMany({
+    const exams = await withRetry(() => prisma.exam.findMany({
       where: { isPublished: true },
       include: { _count: { select: { questions: true } } },
       orderBy: { createdAt: 'asc' },
-    });
+    }));
     res.json({ exams });
   } catch {
     res.status(500).json({ error: 'Internal server error' });

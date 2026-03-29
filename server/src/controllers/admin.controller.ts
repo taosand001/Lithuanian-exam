@@ -1,11 +1,9 @@
 import { Request, Response } from 'express';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { prisma, withRetry } from '../utils/prisma';
 
 export async function getStats(_req: Request, res: Response): Promise<void> {
   try {
-    const [totalUsers, totalExams, totalAttempts, recentAttempts] = await Promise.all([
+    const [totalUsers, totalExams, totalAttempts, recentAttempts] = await withRetry(() => Promise.all([
       prisma.user.count(),
       prisma.exam.count(),
       prisma.examAttempt.count(),
@@ -17,7 +15,7 @@ export async function getStats(_req: Request, res: Response): Promise<void> {
           exam: { select: { title: true, level: true } },
         },
       }),
-    ]);
+    ]));
     res.json({ totalUsers, totalExams, totalAttempts, recentAttempts });
   } catch {
     res.status(500).json({ error: 'Internal server error' });

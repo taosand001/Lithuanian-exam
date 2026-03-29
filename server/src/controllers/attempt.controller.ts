@@ -1,25 +1,24 @@
 
 import { Response } from 'express';
-import { PrismaClient, Prisma } from '@prisma/client';
+import { Prisma } from '@prisma/client';
 import { AuthRequest } from '../middleware/auth.middleware';
-
-const prisma = new PrismaClient();
+import { prisma, withRetry } from '../utils/prisma';
 
 type QuestionWithOptions = Prisma.QuestionGetPayload<{ include: { options: true } }>;
 
 async function getLastUsedVariants(userId: string, examId: string): Promise<Set<string>> {
-  const lastAttempt = await prisma.examAttempt.findFirst({
+  const lastAttempt = await withRetry(() => prisma.examAttempt.findFirst({
     where: { userId, examId, completedAt: { not: null } },
     orderBy: { startedAt: 'desc' },
-  });
+  }));
   if (!lastAttempt || !lastAttempt.questionIds) return new Set();
   try {
     const ids: string[] = JSON.parse(lastAttempt.questionIds);
     if (!ids.length) return new Set();
-    const questions = await prisma.question.findMany({
+    const questions = await withRetry(() => prisma.question.findMany({
       where: { id: { in: ids } },
       select: { variantSet: true },
-    });
+    }));
     return new Set(questions.map(q => q.variantSet).filter(Boolean) as string[]);
   } catch {
     return new Set();
@@ -33,10 +32,10 @@ function pickFreshVariant(variants: string[], usedVariants: Set<string>): string
 }
 
 async function selectQuestionsForAttempt(examId: string, userId: string): Promise<QuestionWithOptions[]> {
-  const allQuestions = await prisma.question.findMany({
+  const allQuestions = await withRetry(() => prisma.question.findMany({
     where: { examId },
     include: { options: { orderBy: { order: 'asc' } } },
-  });
+  }));
 
   const usedVariants = await getLastUsedVariants(userId, examId);
 
@@ -78,17 +77,17 @@ export async function startAttempt(req: AuthRequest, res: Response): Promise<voi
   try {
     const { examId } = req.body;
     const userId = req.user!.userId;
-    const exam = await prisma.exam.findUnique({ where: { id: examId } });
+    const exam = await withRetry(() => prisma.exam.findUnique({ where: { id: examId } }));
     if (!exam) {
       res.status(404).json({ error: 'Exam not found' });
       return;
     }
     const questions = await selectQuestionsForAttempt(examId, userId);
     const questionIds = JSON.stringify(questions.map(q => q.id));
-    const attempt = await prisma.examAttempt.create({
+    const attempt = await withRetry(() => prisma.examAttempt.create({
       data: { userId, examId, questionIds },
       include: { exam: true },
-    });
+    }));
     res.status(201).json({ attempt: { ...attempt, questions } });
   } catch (err) {
     console.error('startAttempt error:', err);
@@ -102,10 +101,10 @@ export async function submitAttempt(req: AuthRequest, res: Response): Promise<vo
     const { answers, timeSpent } = req.body;
     const userId = req.user!.userId;
 
-    const attempt = await prisma.examAttempt.findUnique({
+    const attempt = await withRetry(() => prisma.examAttempt.findUnique({
       where: { id },
       include: { exam: true },
-    });
+    }));
     if (!attempt) {
       res.status(404).json({ error: 'Attempt not found' });
       return;
@@ -119,13 +118,13 @@ export async function submitAttempt(req: AuthRequest, res: Response): Promise<vo
       return;
     }
 
-    const questions = await prisma.question.findMany({
+    const questions = await withRetry(() => prisma.question.findMany({
       where: { examId: attempt.examId },
       include: { options: true },
-    });
+    }));
 
     let correct = 0;
-    const answerRecords = [];
+    const answerRecords: { attemptId: string; questionId: string; selectedOption: string | null; textAnswer: string | null; isCorrect: boolean | null }[] = [];
 
     for (const q of questions) {
       const ans = answers?.find((a: { questionId: string }) => a.questionId === q.id);
@@ -150,7 +149,7 @@ export async function submitAttempt(req: AuthRequest, res: Response): Promise<vo
     }
 
     if (answerRecords.length > 0) {
-      await prisma.attemptAnswer.createMany({ data: answerRecords });
+      await withRetry(() => prisma.attemptAnswer.createMany({ data: answerRecords }));
     }
 
     const totalGraded = questions.filter(q =>
@@ -159,7 +158,7 @@ export async function submitAttempt(req: AuthRequest, res: Response): Promise<vo
     const score = totalGraded > 0 ? (correct / totalGraded) * 100 : 0;
     const passed = score >= attempt.exam.passingScore;
 
-    const updated = await prisma.examAttempt.update({
+    const updated = await withRetry(() => prisma.examAttempt.update({
       where: { id },
       data: { score, passed, completedAt: new Date(), timeSpent: timeSpent || null },
       include: {
@@ -174,7 +173,7 @@ export async function submitAttempt(req: AuthRequest, res: Response): Promise<vo
           },
         },
       },
-    });
+    }));
 
     res.json({ attempt: updated });
   } catch (err) {
@@ -187,7 +186,7 @@ export async function getAttempt(req: AuthRequest, res: Response): Promise<void>
   try {
     const { id } = req.params;
     const userId = req.user!.userId;
-    const attempt = await prisma.examAttempt.findUnique({
+    const attempt = await withRetry(() => prisma.examAttempt.findUnique({
       where: { id },
       include: {
         exam: true,
@@ -201,7 +200,7 @@ export async function getAttempt(req: AuthRequest, res: Response): Promise<void>
           },
         },
       },
-    });
+    }));
     if (!attempt) {
       res.status(404).json({ error: 'Attempt not found' });
       return;
@@ -219,11 +218,11 @@ export async function getAttempt(req: AuthRequest, res: Response): Promise<void>
 export async function myAttempts(req: AuthRequest, res: Response): Promise<void> {
   try {
     const userId = req.user!.userId;
-    const attempts = await prisma.examAttempt.findMany({
+    const attempts = await withRetry(() => prisma.examAttempt.findMany({
       where: { userId },
       include: { exam: { select: { id: true, title: true, level: true, passingScore: true } } },
       orderBy: { startedAt: 'desc' },
-    });
+    }));
     res.json({ attempts });
   } catch {
     res.status(500).json({ error: 'Internal server error' });
