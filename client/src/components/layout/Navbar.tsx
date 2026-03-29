@@ -35,6 +35,9 @@ export default function Navbar() {
             <NavLink to="/grammar" className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-violet-600' : 'text-slate-600 hover:text-violet-600'}`}>
               🇱🇹 Linksniai
             </NavLink>
+            <NavLink to="/constitution" className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-violet-600' : 'text-slate-600 hover:text-violet-600'}`}>
+              📜 Konstitucija
+            </NavLink>
             {user && (
               <NavLink to="/dashboard" className={({ isActive }) => `text-sm font-medium transition-colors ${isActive ? 'text-violet-600' : 'text-slate-600 hover:text-violet-600'}`}>
                 Valdymo panelė
@@ -146,6 +149,9 @@ export default function Navbar() {
           </NavLink>
           <NavLink to="/grammar" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-slate-700 font-medium">
             🇱🇹 Linksniai
+          </NavLink>
+          <NavLink to="/constitution" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-slate-700 font-medium">
+            📜 Konstitucija
           </NavLink>
           {user && (
             <NavLink to="/dashboard" onClick={() => setMenuOpen(false)} className="flex items-center gap-2 py-2 text-slate-700 font-medium">
